@@ -1,4 +1,4 @@
 flask
 numpy
 pillow
-tflite-runtime
+ai-edge-litert
