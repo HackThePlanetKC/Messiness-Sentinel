@@ -1,0 +1,13 @@
+[Unit]
+Description=Pi Room Sentinel TFLite and Snapshot Service
+After=network.target
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/pi-room-sentinel
+ExecStart=/usr/bin/python3 /home/pi/pi-room-sentinel/app.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
