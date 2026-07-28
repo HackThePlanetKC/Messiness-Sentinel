@@ -7,7 +7,7 @@ import paho.mqtt.client as mqtt
 from PIL import Image
 from flask import Flask, jsonify, send_file
 from picamera2 import Picamera2
-from tflite_runtime.interpreter import Interpreter
+from ai_edge_litert.interpreter import Interpreter
 
 app = Flask(__name__)
 
