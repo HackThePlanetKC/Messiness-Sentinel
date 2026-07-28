@@ -20,7 +20,7 @@ A lightweight, local-edge vision and presence detection sentinel designed for th
 Clone the repository and run the automated installer script:
 
 ```bash
-git clone [https://github.com/HackThePlanetKC/Messiness-Sentinel.git](https://github.com/HackThePlanetKC/Messiness-Sentinel.git) ~/pi-room-sentinel
+git clone https://github.com/HackThePlanetKC/Messiness-Sentinel.git ~/pi-room-sentinel
 cd ~/pi-room-sentinel
 chmod +x install.sh
 sudo ./install.sh
