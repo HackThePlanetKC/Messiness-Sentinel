@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-INSTALL_DIR="/home/pi/pi-room-sentinel"
+INSTALL_DIR="~/pi-room-sentinel"
 
 echo "[*] Updating system packages and installing camera/imaging dependencies..."
 sudo apt update && sudo apt install -y python3-picamera2 python3-pip python3-opencv python3-numpy
