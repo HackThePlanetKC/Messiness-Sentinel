@@ -12,7 +12,7 @@ pip3 install -r "$INSTALL_DIR/requirements.txt" --break-system-packages
 echo "[*] Downloading MobileNet TFLite detection model..."
 if [ ! -f "$INSTALL_DIR/detect.tflite" ]; then
     cd "$INSTALL_DIR"
-    wget -O detect.tflite https://github.com/google-coral/test_data/raw/master/coco_ssd_mobilenet_v1_switched_quant_cat_dog.tflite
+    wget -O detect.tflite https://raw.githubusercontent.com/google-coral/edgetpu/master/test_data/ssd_mobilenet_v1_coco_quant_postprocess.tflite
 fi
 
 echo "[*] Setting up systemd service..."
