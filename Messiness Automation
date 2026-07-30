@@ -1,0 +1,87 @@
+alias: Living Room Messiness Checker
+description: ""
+triggers:
+  - trigger: time_pattern
+    minutes: "0"
+  - trigger: time_pattern
+    minutes: "30"
+conditions:
+  - condition: zone.in_zone
+    target:
+      entity_id: person.daddy
+    options:
+      behavior: any
+      for: "00:00:00"
+      zone: zone.home
+    enabled: false
+  - condition: state
+    entity_id: sensor.sm_s938u_do_not_disturb_sensor
+    state:
+      - "off"
+    enabled: false
+actions:
+  - action: button.press
+    metadata: {}
+    target:
+      entity_id: button.trigger_messiness_snapshot
+    data: {}
+  - action: llmvision.image_analyzer
+    metadata: {}
+    data:
+      store_in_timeline: true
+      use_memory: false
+      include_filename: false
+      target_width: 1280
+      max_tokens: 3000
+      generate_title: false
+      expose_images: false
+      response_format: json
+      title_field: Living Room Messiness Report
+      provider: 01KYNC78HHEGHYHHDTADFPXYFP
+      image_entity:
+        - camera.living_room_messiness_camera
+      message: >-
+        Analyze this living room image for messiness and clutter using the
+        following structure:
+
+        - messiness_score: number from 1 to 10
+
+        - plates_or_dishes: boolean (true/false)
+
+        - clothes_or_laundry: boolean (true/false)
+
+        - trash_or_wrappers: boolean (true/false)
+
+        - specific_items: list of strings detailing noticeable mess
+
+        - summary: short 1-sentence description
+      model: gemini-2.5-flash
+      description_field: Living Room Messiness Report
+    response_variable: living_room_messiness_report
+  - action: input_number.set_value
+    target:
+      entity_id: input_number.living_room_messiness_score_helper
+    data:
+      value: >-
+        {{ living_room_messiness_report.structured_response.messiness_score |
+        int(0) }}
+  - action: input_text.set_value
+    target:
+      entity_id: input_text.living_room_messy_summary_helper
+    data:
+      value: >-
+        {{ living_room_messiness_report.structured_response.summary |
+        default('No data', true) }}
+  - action: >-
+      input_boolean.turn_{{ 'on' if
+      living_room_messiness_report.structured_response.plates_or_dishes else
+      'off' }}
+    target:
+      entity_id: input_boolean.living_room_has_dishes_helper
+  - action: >-
+      input_boolean.turn_{{ 'on' if
+      living_room_messiness_report.structured_response.trash_or_wrappers else
+      'off' }}
+    target:
+      entity_id: input_boolean.living_room_has_trash_helper
+mode: single
