@@ -12,11 +12,14 @@ from ai_edge_litert.interpreter import Interpreter
 app = Flask(__name__)
 
 # MQTT Configuration (Update broker IP or use localhost if running on HA host)
-MQTT_BROKER = "192.168.1.50"
+MQTT_BROKER = "192.168.1.240"
 MQTT_PORT = 1883
 MQTT_TOPIC_COMMAND = "home/livingroom_cam/set"
 MQTT_TOPIC_STATE = "home/livingroom_cam/state"
 MQTT_TOPIC_SNAPSHOT_READY = "home/livingroom_cam/snapshot_ready"
+MQTT_USER = "daddymqtt"
+MQTT_PASS = "Drewdles11"
+
 
 # Initialize Camera
 picam2 = Picamera2()
@@ -41,7 +44,7 @@ def run_person_detection():
     h, w = input_shape[1], input_shape[2]
     
     img = Image.fromarray(frame).resize((w, h))
-    input_data = np.expand_dims(np.array(img, dtype=np.float32), axis=0)
+    input_data = np.expand_dims(np.array(img, dtype=np.uint8), axis=0)
     
     interpreter.set_tensor(input_details[0]['index'], input_data)
     interpreter.invoke()
@@ -72,6 +75,8 @@ def on_message(client, userdata, msg):
             img_io.seek(0)
             global latest_snapshot
             latest_snapshot = img_io.read()
+            
+            client.publish("home/livingroom_cam/snapshot_image", latest_snapshot)
         
         # Notify Home Assistant that the snapshot is ready to fetch via HTTP
         client.publish(MQTT_TOPIC_SNAPSHOT_READY, "true")
@@ -83,6 +88,7 @@ mqtt_client.on_message = on_message
 
 def start_mqtt():
     try:
+        mqtt_client.username_pw_set(MQTT_USER, MQTT_PASS)
         mqtt_client.connect(MQTT_BROKER, MQTT_PORT, 60)
         mqtt_client.loop_start()
     except Exception as e:
@@ -106,6 +112,23 @@ def get_snapshot():
             return send_file(io.BytesIO(latest_snapshot), mimetype='image/jpeg')
     return "No snapshot available", 404
 
+def presence_loop():
+    """Background thread running person detection every 1 second."""
+    while True:
+        try:
+            is_present = run_person_detection()
+            mqtt_client.publish(MQTT_TOPIC_STATE, "ON" if is_present else "OFF")
+        except Exception as e:
+            print(f"Presence loop error: {e}")
+            
+        time.sleep(1)  # Runs every 1 second
+
 if __name__ == '__main__':
+    with snapshot_lock:
+        img_io = io.BytesIO()
+        picam2.capture_file(img_io, format='jpeg')
+        img_io.seek(0)
+        latest_snapshot = img_io.read()
     start_mqtt()
+    threading.Thread(target=presence_loop, daemon=True).start()
     app.run(host='0.0.0.0', port=5000)
