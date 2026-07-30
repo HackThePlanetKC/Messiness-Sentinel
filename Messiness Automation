@@ -37,7 +37,7 @@ actions:
       expose_images: false
       response_format: json
       title_field: Living Room Messiness Report
-      provider: 01KYNC78HHEGHYHHDTADFPXYFP
+      provider: !!!Change_This
       image_entity:
         - camera.living_room_messiness_camera
       message: >-
